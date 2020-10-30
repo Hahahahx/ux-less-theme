@@ -8,3 +8,4 @@ tsconfig.json
 .editorconfig
 .yarn-error.log
 webpack.config.js
+tslint.json

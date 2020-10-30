@@ -22,7 +22,7 @@ interface ReqParams {
     shaking?: boolean;
 }
 
-export const themeMiddleware = (option: ThemeOptions) => {
+export default function themeMiddleware(option: ThemeOptions) {
     return async (req: any, res: any, next: any) => {
         if (req.originUrl.slice(0, option.url.length) === option.url) {
             const urls = option.url.split("/");
@@ -66,7 +66,7 @@ export const themeMiddleware = (option: ThemeOptions) => {
         }
         next();
     };
-};
+}
 
 /**
  * 生成两个antd自带的主题

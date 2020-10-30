@@ -1,3 +1,3 @@
 import * as ThemeMiddleware from "./themeMiddleware";
 
-export { ThemeMiddleware };
+export default ThemeMiddleware.default;
