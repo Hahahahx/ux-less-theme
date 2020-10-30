@@ -9,11 +9,11 @@ import * as path from "path";
  * @param url 项目启动本地服务器访问地址，如:"/less"
  */
 interface ThemeOptions {
-    antdDir: string;
+    antdDir?: string;
     antdRequired?: string[];
-    lessFile: string;
-    outputDir: string;
-    url: string;
+    lessFile?: string;
+    outputDir?: string;
+    url?: string;
 }
 
 interface ReqParams {
@@ -22,10 +22,59 @@ interface ReqParams {
     shaking?: boolean;
 }
 
-export default function themeMiddleware(option: ThemeOptions) {
+async function generaterAntd(antdDir: string, outputDir: string) {
+    const resultDark = await generatorAntdTheme(
+        {
+            antdDir,
+            outputDir,
+        },
+        "dark"
+    );
+    const resultCompact = await generatorAntdTheme(
+        {
+            antdDir,
+            outputDir,
+        },
+        "compact"
+    );
+
+    return {
+        dark: resultDark,
+        compact: resultCompact,
+    };
+}
+
+async function changeLessVars(
+    params: ReqParams,
+    lessFile: string,
+    antdDir: string,
+    outputDir: string
+) {
+    if (params.compileAntd) {
+        const result = await compileLess(
+            path.resolve(antdDir, "lib/style/components.less"),
+            path.resolve(outputDir, `theme.css`),
+            params.shaking,
+            params.vars
+        );
+        return result;
+    } else {
+        const result = await compileLess(
+            lessFile,
+            path.resolve(outputDir, `theme.css`),
+            params.shaking,
+            params.vars
+        );
+        return result;
+    }
+}
+
+function themeMiddleware(option: ThemeOptions) {
     return async (req: any, res: any, next: any) => {
-        if (req.originUrl.slice(0, option.url.length) === option.url) {
-            const urls = option.url.split("/");
+        const reqUrl = req.originalUrl;
+        const baseUrl = option.url;
+        if (reqUrl && reqUrl.slice(0, baseUrl.length) === baseUrl) {
+            const urls = reqUrl.split("/");
             switch (urls[urls.length - 1]) {
                 case "generater": {
                     const resultDark = await generatorAntdTheme(option, "dark");
@@ -42,7 +91,7 @@ export default function themeMiddleware(option: ThemeOptions) {
                 case "changevars": {
                     const params: ReqParams = req.body;
                     if (params.compileAntd) {
-                        const result = compileLess(
+                        const result = await compileLess(
                             path.resolve(
                                 option.antdDir,
                                 "lib/style/components.less"
@@ -53,7 +102,7 @@ export default function themeMiddleware(option: ThemeOptions) {
                         );
                         res.json({ result });
                     } else {
-                        const result = compileLess(
+                        const result = await compileLess(
                             option.lessFile,
                             path.resolve(option.outputDir, `theme.css`),
                             params.shaking,
@@ -67,6 +116,8 @@ export default function themeMiddleware(option: ThemeOptions) {
         next();
     };
 }
+
+export { themeMiddleware, generaterAntd, changeLessVars };
 
 /**
  * 生成两个antd自带的主题

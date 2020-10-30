@@ -15,7 +15,27 @@ declare module "ux-less-theme" {
         url: string;
     }
 
+    interface ReqParams {
+        compileAntd?: boolean;
+        vars?: { [K: string]: string };
+        shaking?: boolean;
+    }
 
-    function ThemeMiddleware(option: ThemeOptions): void;
-    export default ThemeMiddleware ;
+    function changeLessVars(
+        params: ReqParams,
+        lessFile: string,
+        antdDir: string,
+        outputDir: string
+    ): Promise<boolean>;
+
+    function generaterAntd(
+        antdDir: string,
+        outputDir: string
+    ): Promise<{ dark: boolean; compact: boolean }>;
+
+    function themeMiddleware(
+        option: ThemeOptions
+    ): (req: any, res: any, next: any) => Promise<any>;
+    
+    export default { themeMiddleware, changeLessVars, generaterAntd };
 }
