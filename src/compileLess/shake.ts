@@ -1,5 +1,5 @@
-import { filterVars } from "./filterVars";
-import { TypeEvent } from "./TypeEvent";
+import { filterVars } from "./filter-vars";
+import { TypeEvent } from "./type-event";
 import { isExpression } from "./utils";
 
 /**

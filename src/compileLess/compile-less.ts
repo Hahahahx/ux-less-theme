@@ -33,7 +33,7 @@ export function compileLess(
     output: string,
     shake: boolean,
     modifyVars?: object,
-    addInput?: string
+    setInputData?: (data: string) => string
 ): Promise<boolean> {
     return new Promise((resolve, reject) => {
         try {
@@ -42,8 +42,8 @@ export function compileLess(
             // 读取index.less文件内容
             let data = fs.readFileSync(input, "utf-8");
             // 增设内容
-            if (data && addInput) {
-                data += addInput;
+            if (data && setInputData) {
+                data = setInputData(data);
             }
             // @ts-ignore
             less.parse(

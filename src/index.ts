@@ -1,2 +1,2 @@
-import * as ThemeMiddleware from "./themeMiddleware";
+import * as ThemeMiddleware from "./theme-plugin";
 module.exports = { ...ThemeMiddleware };
