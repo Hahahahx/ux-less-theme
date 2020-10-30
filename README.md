@@ -9,29 +9,23 @@
     const express = require("express");
 
     const app = express();
-    app.use(express.json())
-    app.use(express.urlencoded({ extended: true }))
     app.use(ThemeMiddleware({
-        antdDir:"/node_modules/antd"    // antd文件夹目录
-        antdRequired:["button","tree-select"], // 因为无法自动识别引入了哪些组件，所以需要手动添加，不然会生成出所有的组件样式，这往往不是我们想要的
-        lessFile:"/src/styles/index.less",  // 自定义样式入口文件
-        outputDir:"/public",    // 生成出的文件存放位置
-        url:"/less",    // 访问的前置路由  1、/less/generater  2、/less/changevars
+        antdDir:path.resolve(paths.appNodeModules,"./antd"),    // antd文件夹目录
+        indexDir:path.resolve(appSrc,"./assets/styles"),    // 自定义样式入口文件，确保目录下有index.less
+        outputDir:paths.appPublic,              // 生成出的文件存放位置
+        antdRequired:['Button','Layout']，              //只打包这些组件
+        baseUrl:"/less",                // 访问路由
     }))
 
 ```
-暴露两个接口： <br/>
-### /generater
-> 在给定文件夹下生成antd其余两个主题样式文件，分别为dark.css与compact.css
 
-### /changevars   mothed:POST
-> 在给定文件夹下生成主题样式文件，theme.css
+接口参数（GET）：
+
 ```typescript
-    interface ReqParams {
-        compileAntd?: boolean;      // 判断是对antd的编译还是index.less即自定义样式文件的编译
-        vars?: { [K: string]: string }; // 所需要改变的样式变量，如：{ "@primary-color":red }
-        shaking?: boolean;          // 是否开启shaking，在样式中有很多与所传入的变量无关的样式，shaking会删除这些样式，保证生成出的样式是有针对性的
-    }
-
-    // 注意：在对antd编译的时候即compileAntd为true时不建议开启shaking，因为会编译出错，在于我还不了解语法解构，删除样式时可能删除了一些不该动的依赖样式。
+//生成两个antd自带的样式主题 dark.css 与 compact.css
+fetch("/less?generater=ture")
+//生成被编译后的index.less样式 theme.css
+fetch("/less?vars[@height]=100vh")
+//生成被编译后的antd样式 theme-antd.css
+fetch("/less?vars[@primary-color]=red")
 ```

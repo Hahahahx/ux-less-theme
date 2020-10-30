@@ -23,6 +23,41 @@ interface ReqParams {
 let option: ThemeOptions & { config: boolean };
 
 /**
+ * express插件
+ * @param options
+ */
+function themeMiddleware(options: ThemeOptions & { baseUrl: string }) {
+    option = { ...option, ...options, config: true };
+    return async function (req: any, res: any, next: any) {
+        const { baseUrl } = options;
+        if (
+            req.originalUrl.slice(0, baseUrl.length).includes(options.baseUrl)
+        ) {
+            switch (true) {
+                case req.query.generater: {
+                    const result = await generaterAntd();
+                    res.json({ result });
+                    break;
+                }
+                case !!req.query.vars: {
+                    const result = await changeLessVars({
+                        compileAntd: req.query.compileAntd,
+                        vars: req.query.vars,
+                    });
+                    res.json({ result });
+                    break;
+                }
+                default:
+                    res.json({ result: false });
+                    break;
+            }
+        } else {
+            next();
+        }
+    };
+}
+
+/**
  * 设置插件配置
  */
 function config(options: ThemeOptions) {
@@ -33,7 +68,7 @@ function config(options: ThemeOptions) {
  * 生成两个antd自带的主题配置 dark.css compact.css
  */
 function generaterAntd() {
-    return isSetConfig(async () => {
+    return isSetConfig(async function () {
         const resultDark = await generatorAntdTheme(option, "dark");
         const resultCompact = await generatorAntdTheme(option, "compact");
 
@@ -50,7 +85,7 @@ function generaterAntd() {
  * @param compileAntd 是否对antd编译，如果是否则编译index.less即自定义的样式，否则就对antd渲染
  */
 function changeLessVars(params: ReqParams) {
-    return isSetConfig(async () => {
+    return isSetConfig(async function () {
         const indexPath = params.compileAntd
             ? path.resolve(option.antdDir, "lib/style/components.less")
             : path.resolve(option.indexDir, "index.less");
@@ -69,7 +104,7 @@ function changeLessVars(params: ReqParams) {
     });
 }
 
-export { config, generaterAntd, changeLessVars };
+export { config, generaterAntd, changeLessVars, themeMiddleware };
 
 /**
  * 判断是否设置了插件配置
@@ -87,10 +122,10 @@ function isSetConfig(fn: Function) {
  * @param option
  * @param theme
  */
-const generatorAntdTheme = async (
+async function generatorAntdTheme(
     option: ThemeOptions,
     theme: "compact" | "dark"
-) => {
+) {
     return await compileLess(
         path.resolve(option.antdDir, "lib/style/components.less"),
         path.resolve(option.outputDir, `${theme}.css`),
@@ -102,12 +137,11 @@ const generatorAntdTheme = async (
             return data;
         }
     );
-};
+}
 
 const hyphenateRE = /\B([A-Z])/g;
 function hyphenate(str: string) {
-    str = str.replace(hyphenateRE, "-$1").toLowerCase();
-    return str.slice(1);
+    return str.replace(hyphenateRE, "-$1").toLowerCase();
 }
 
 /**
@@ -117,7 +151,7 @@ function filterData(data: string) {
     if (option.antdRequired && option.antdRequired.length) {
         data = "";
         option.antdRequired.forEach((str) => {
-            data += `@import "../${hyphenate(str)}/style/index.less";`;
+            data += `\n@import "../${hyphenate(str)}/style/index.less";`;
         });
     }
     return data;
