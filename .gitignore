@@ -1,0 +1,11 @@
+.deploy_git/
+node_modules/
+
+yarn-error.log
+yarn.lock
+
+package-lock.json
+
+debug.log
+
+**/debug.log
