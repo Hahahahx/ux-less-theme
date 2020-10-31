@@ -13,8 +13,6 @@
         antdDir:path.resolve(paths.appNodeModules,"./antd"),    // antd文件夹目录
         indexDir:path.resolve(appSrc,"./assets/styles"),    // 自定义样式入口文件，确保目录下有index.less
         outputDir:paths.appPublic,              // 生成出的文件存放位置
-        whiteList:['Button','Layout'],              // 只打包这些组件，白名单优先级高于黑名单
-        blackList:['TreeSelect','Cart'],        // 不打包这些组件你
         baseUrl:"/less",                // 访问路由
     }))
 
@@ -23,11 +21,14 @@
 接口参数（GET）：
 
 ```typescript
+
+// whiteList:['Button','Layout'],              // 只打包这些组件，白名单优先级高于黑名单
+// blackList:['TreeSelect','Cart'],        // 不打包这些组件你
 //生成两个antd自带的样式主题 dark.css 与 compact.css
-fetch("/less?generater=ture")
+fetch("/less?generater=ture&whiteList[0]=Button&whiteList[1]=Layout")
 
 //生成antd自带的样式主题 dark.css
-fetch("/less?generater=ture&theme=dark")
+fetch("/less?generater=ture&theme=dark&blackList[0]=TreeSelect&blackList[1]=Cart")
 
 //生成被编译后的index.less样式 theme.css
 fetch("/less?vars[@height]=100vh")

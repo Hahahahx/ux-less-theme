@@ -29,13 +29,20 @@ let option: ThemeOptions & { config: boolean };
  * express插件
  * @param options
  */
-function themeMiddleware(options: ThemeOptions & { baseUrl: string }) {
+function themeMiddleware(options: {
+    baseUrl: string;
+    antdDir: string;
+    indexDir: string;
+    outputDir: string;
+}) {
     option = { ...option, ...options, config: true };
     return async function (req: any, res: any, next: any) {
         const { baseUrl } = options;
         if (
             req.originalUrl.slice(0, baseUrl.length).includes(options.baseUrl)
         ) {
+            req.query.whiteList && (option.whiteList = req.query.whiteList);
+            req.query.blackList && (option.blackList = req.query.blackList);
             switch (true) {
                 case req.query.generater: {
                     const result = await generaterAntd(req.query.theme);
