@@ -3,7 +3,7 @@
     "auther": {
         "name": "ux"
     },
-    "version": "0.0.6",
+    "version": "1.0.0",
     "description": "less主题切换",
     "repository": "",
     "main": "lib/index.js",

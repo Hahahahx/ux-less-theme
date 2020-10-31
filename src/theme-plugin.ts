@@ -4,20 +4,23 @@ import * as path from "path";
  * @param antdDir antd文件夹
  * @param indexDir less样式入口文件，确保该文件夹下存在唯一的index.less
  * @param output 样式导出文件夹
- * @param antdRequired 由于没法识别到底使用了哪些antd组件，
+ * @param whiteList 由于没法识别到底使用了哪些antd组件，
  * 所以每添加一个组件在项目里都要在这里添加进去才能做到按需加载以至于不会打包全部的antd样式
  * 如在项目中，添加了Button和TreeSelect则 ["button","tree-select"]
+ * @param blackList 出了白名单还有黑名单，白名单的优先级高于黑名单
  */
 interface ThemeOptions {
     antdDir: string;
     indexDir: string;
     outputDir: string;
-    antdRequired?: string[];
+    whiteList?: string[];
+    blackList?: string[];
 }
 
 interface ReqParams {
     compileAntd?: boolean;
     vars?: { [K: string]: string };
+    theme?: "dark" | "compact";
 }
 
 let option: ThemeOptions & { config: boolean };
@@ -35,14 +38,13 @@ function themeMiddleware(options: ThemeOptions & { baseUrl: string }) {
         ) {
             switch (true) {
                 case req.query.generater: {
-                    const result = await generaterAntd();
+                    const result = await generaterAntd(req.query.theme);
                     res.json({ result });
                     break;
                 }
                 case !!req.query.vars: {
                     const result = await changeLessVars({
-                        compileAntd: req.query.compileAntd,
-                        vars: req.query.vars,
+                        ...req.query,
                     });
                     res.json({ result });
                     break;
@@ -67,10 +69,17 @@ function config(options: ThemeOptions) {
 /**
  * 生成两个antd自带的主题配置 dark.css compact.css
  */
-function generaterAntd() {
+function generaterAntd(theme?: "dark" | "compact") {
     return isSetConfig(async function () {
-        const resultDark = await generatorAntdTheme(option, "dark");
-        const resultCompact = await generatorAntdTheme(option, "compact");
+        let resultDark = false;
+        let resultCompact = false;
+        if (theme) {
+            const result = await generatorAntdTheme(option, theme);
+            theme === "dark" ? (resultDark = result) : (resultCompact = result);
+        } else {
+            resultDark = await generatorAntdTheme(option, "dark");
+            resultCompact = await generatorAntdTheme(option, "compact");
+        }
 
         return {
             dark: resultDark,
@@ -83,6 +92,7 @@ function generaterAntd() {
  * 改变less变量，生成css
  * @param vars 变量，键值对，如：{"@primary-color":"red"}
  * @param compileAntd 是否对antd编译，如果是否则编译index.less即自定义的样式，否则就对antd渲染
+ * @param theme 主题，只有在compileAntd为true时有效，可选项为dark|compact
  */
 function changeLessVars(params: ReqParams) {
     return isSetConfig(async function () {
@@ -98,7 +108,7 @@ function changeLessVars(params: ReqParams) {
             ),
             !params.compileAntd,
             params.vars,
-            params.compileAntd ? filterData : undefined
+            params.compileAntd ? filterData(params.theme) : undefined
         );
         return result;
     });
@@ -131,28 +141,36 @@ async function generatorAntdTheme(
         path.resolve(option.outputDir, `${theme}.css`),
         false,
         undefined,
-        (data) => {
-            data = filterData(data);
-            data += `\n@import "./${theme}.less";`;
-            return data;
-        }
+        filterData(theme)
     );
 }
 
 const hyphenateRE = /\B([A-Z])/g;
 function hyphenate(str: string) {
-    return str.replace(hyphenateRE, "-$1").toLowerCase();
+    return str.replace(hyphenateRE, "-$1").toLowerCase().trim();
 }
 
 /**
  * 从新生成样式，只引入需要改变样式的antd组件。默认会生成全部的组件
  */
-function filterData(data: string) {
-    if (option.antdRequired && option.antdRequired.length) {
-        data = "";
-        option.antdRequired.forEach((str) => {
-            data += `\n@import "../${hyphenate(str)}/style/index.less";`;
-        });
-    }
-    return data;
+function filterData(theme?: "dark" | "compact") {
+    return function (data: string) {
+        if (option.whiteList && option.whiteList.length) {
+            data = "";
+            option.whiteList.forEach((str) => {
+                data += `\n@import "../${hyphenate(str)}/style/index.less";`;
+            });
+        } else if (option.blackList && option.blackList.length) {
+            option.blackList.forEach((str) => {
+                const declaration = `@import "../${hyphenate(
+                    str
+                )}/style/index.less";`;
+                data.replace(declaration, "");
+            });
+        }
+        if (theme) {
+            data += `\n@import "./${theme}.less";`;
+        }
+        return data;
+    };
 }
