@@ -28,7 +28,7 @@
 fetch("/less?generater=ture&whiteList[0]=Button&whiteList[1]=Layout")
 
 //生成antd自带的样式主题 dark.css
-fetch("/less?generater=ture&theme=dark&blackList[0]=TreeSelect&blackList[1]=Cart")
+fetch("/less?generater=ture&theme=dark&blackList[0]=TreeSelect&blackList[1]=Cart ")
 
 //生成被编译后的index.less样式 theme.css
 fetch("/less?vars[@height]=100vh")
@@ -39,7 +39,6 @@ fetch("/less?vars[@primary-color]=red&compileAntd=true")
 //生成被编译后的antd样式 theme-antd.css但是是基于 antd自带样式主题compact的
 fetch("/less?vars[@primary-color]=red&compileAntd=true&theme=compact")
 ```
-
 
 除了上面使用的express中间件以外还暴露了三个主要方法，它们是构成这个中间件的基础。 <br/>
 把他暴露出来以便能自己编写中间件，如webpackPlugin：

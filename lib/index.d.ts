@@ -44,14 +44,13 @@ declare module "ux-less-theme" {
      * @param antdDir antd文件夹
      * @param indexDir less样式入口文件，确保该文件夹下存在唯一的index.less
      * @param output 样式导出文件夹
-     * @param whiteList 由于没法识别到底使用了哪些antd组件，
-     * 如在项目中，添加了Button和TreeSelect则 ["Button","TreeSelect"]
-     * 这样，在打包的时候就只会生成这两个组件的css。
-     * @param blackList 出了白名单还有黑名单，白名单的优先级高于黑名单
      */
-    function themeMiddleware(
-        options: ThemeOptions & { baseUrl: string }
-    ): (req, res, next) => void;
+    function themeMiddleware(options: {
+        baseUrl: string;
+        antdDir: string;
+        indexDir: string;
+        outputDir: string;
+    }): (req, res, next) => void;
 
     export { config, generaterAntd, changeLessVars, themeMiddleware };
 }
