@@ -10,6 +10,7 @@ export class TypeEvent {
     doAtRule: Function;
     doRuleset: Function;
     doMixinCall: Function;
+    doDefinition: Function;
 
     constructor(rule: any) {
         this.rule = rule;
@@ -35,6 +36,11 @@ export class TypeEvent {
         return this;
     }
 
+    setDefinition(fn: TypeFn) {
+        this.doDefinition = fn.bind(this, this.rule);
+        return this;
+    }
+
     setMixinCall(fn: TypeFn) {
         this.doMixinCall = fn.bind(this, this.rule);
         return this;
@@ -43,6 +49,8 @@ export class TypeEvent {
     run() {
         if (isType(this.rule, "Import")) {
             this.doImport();
+        } else if (isType(this.rule, "MixinDefinition")) {
+            this.doDefinition();
         } else if (isType(this.rule, "MixinCall")) {
             this.doMixinCall();
         } else if (isType(this.rule, "Declaration")) {

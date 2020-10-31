@@ -19,7 +19,15 @@ function haveVariable(item: any, vars: string[]) {
     if (needCompare(item, vars)) {
         return true;
     } else if (isType(item, "JavaScript")) {
-        // 脚本 太复杂了不做shake直接通过让其编译
+        // Javascript太复杂了不做shake直接通过让其编译...
+        // 淦！复杂个锤子，安排上，正则寻找变量！如果需要和变量匹配，即第三次shaking的时候。其余时候通过编译
+        if (vars) {
+            const match = item.expression.match(/\@{(.*)}/);
+            if (match) {
+                return vars.some((item) => item.includes(match[1]));
+            }
+            return false;
+        }
         return true;
     } else if (isType(item, "Operation")) {
         // 计算表达式
@@ -49,6 +57,10 @@ function isExpression(decalration: any, vars: string[]): boolean {
         // 有可能是直接的结果，也有可能是Expression对象，对象就会被装在list里
         // 测试时列表中只会有一个，但不确定是否会有多个所以循环
         return value.some((expression) => {
+            // 有可能得到的这个expression对象本身就是Variable对象
+            if (needCompare(expression, vars)) {
+                return true;
+            }
             if (expression.value) {
                 // 如果找到变量了那么直接跳出循环
                 // 举个栗子，它可能是这样的 width: 10+1+1+1+1+1+@num+3+3+3
