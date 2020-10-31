@@ -44,7 +44,7 @@ function themeMiddleware(options: {
             req.query.whiteList && (option.whiteList = req.query.whiteList);
             req.query.blackList && (option.blackList = req.query.blackList);
             switch (true) {
-                case req.query.generater: {
+                case !!req.query.generater: {
                     const result = await generaterAntd(req.query.theme);
                     res.json({ result });
                     break;
