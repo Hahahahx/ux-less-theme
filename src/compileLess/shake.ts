@@ -1,6 +1,6 @@
 import { filterVars } from "./filter-vars";
 import { TypeEvent } from "./type-event";
-import { isExpression } from "./utils";
+import { isExpression, isType } from "./utils";
 
 /**
  * 过滤不需要重新编译的样式
@@ -47,8 +47,8 @@ function shake(
                 })
                 .setDefinition(() => {
                     // 自定义函数
-                    let params = rule.params.map((item: any) => item.name);
-                    let oldVars = vars;
+                    const params = rule.params.map((item: any) => item.name);
+                    const oldVars = vars;
                     if (vars) {
                         vars = [...vars, ...params];
                     }
