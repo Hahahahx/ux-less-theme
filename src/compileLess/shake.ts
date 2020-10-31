@@ -48,32 +48,24 @@ function shake(
                 .setDefinition(() => {
                     // 自定义函数
                     let params = rule.params.map((item: any) => item.name);
-                    // 由于要加上对参数中的变量的比对，所以没法向下传递，
-                    // 除非是在vars直接push进函数里的变量，但是不知道会不会污染其他的判断，想来应该是会的。
-                    // 当然也可以再加上一个量来判断，但是我怕搞混乱了，先这样，能跑起来，
-                    // 代码段虽然大坨但是好理解一点。优化放在后面再说好了。。。
-                    vars && (params = [...params, ...vars]);
-                    const resultsDefinition: any[] = [];
-                    rule.rules.forEach((item: any) => {
-                        if (item.variable) {
-                            resultsDefinition.push(item);
-                            if (Array.isArray(item.value.value)) {
-                                if (isExpression(item, params)) {
-                                    getVars(item);
-                                }
-                            }
-                        } else {
-                            isExpression(item, params) &&
-                                resultsDefinition.push(item);
-                        }
-                    });
-                    rule.rules = resultsDefinition;
-                    results.push(rule);
+                    let oldVars = vars;
+                    if (vars) {
+                        vars = [...vars, ...params];
+                    }
+                    rule.rules &&
+                        doRecursion(rule, (rules) => {
+                            rule.rules = rules;
+                            results.push(rule);
+                        });
+                    vars = oldVars;
                 })
                 .setMixinCall(() => {
                     // 自定义函数的调用
                     rule.arguments.some((item: any) => {
-                        if (isExpression(item, vars)) {
+                        if (
+                            isType(item.value, "Expression") &&
+                            isExpression(item, vars)
+                        ) {
                             results.push(rule);
                             return true;
                         }

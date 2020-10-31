@@ -36,6 +36,9 @@ fetch("/less?vars[@height]=100vh")
 //生成被编译后的antd样式 theme-antd.css
 fetch("/less?vars[@primary-color]=red&compileAntd=true")
 
+//生成被编译后的antd样式 theme-antd.css ，开启shaking功能只编译出和@primary-color变量有依赖的样式
+fetch("/less?vars[@primary-color]=red&compileAntd=true&shaking=true")
+
 //生成被编译后的antd样式 theme-antd.css但是是基于 antd自带样式主题compact的
 fetch("/less?vars[@primary-color]=red&compileAntd=true&theme=compact")
 ```
@@ -67,10 +70,12 @@ fetch("/less?vars[@primary-color]=red&compileAntd=true&theme=compact")
      * @param vars 变量，键值对，如：{"@primary-color":"red"}
      * @param compileAntd 是否对antd编译，如果是否则编译index.less即自定义的样式，否则就对antd渲染
      * @param theme 主题，只有在compileAntd为true时有效，可选项为dark|compact
+     * @param shaking 是否开启shaking功能
      */
     Theme.changeLessVars({
         vars:{"@height":"100vh"},
         compileAntd: true|false,
-        theme:"dark"|"compact"
+        theme:"dark"|"compact", 
+        shaking:true|false
     })
 ```

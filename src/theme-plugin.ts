@@ -21,6 +21,7 @@ interface ReqParams {
     compileAntd?: boolean;
     vars?: { [K: string]: string };
     theme?: "dark" | "compact";
+    shaking?: boolean;
 }
 
 let option: ThemeOptions & { config: boolean };
@@ -100,6 +101,7 @@ function generaterAntd(theme?: "dark" | "compact") {
  * @param vars 变量，键值对，如：{"@primary-color":"red"}
  * @param compileAntd 是否对antd编译，如果是否则编译index.less即自定义的样式，否则就对antd渲染
  * @param theme 主题，只有在compileAntd为true时有效，可选项为dark|compact
+ * @param shaking 是否开启shaking功能
  */
 function changeLessVars(params: ReqParams) {
     return isSetConfig(async function () {
@@ -113,7 +115,7 @@ function changeLessVars(params: ReqParams) {
                 option.outputDir,
                 params.compileAntd ? "theme-antd.css" : "theme.css"
             ),
-            !params.compileAntd,
+            params.shaking,
             params.vars,
             params.compileAntd ? filterData(params.theme) : undefined
         );

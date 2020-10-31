@@ -61,13 +61,15 @@ function isExpression(decalration: any, vars: string[]): boolean {
             if (needCompare(expression, vars)) {
                 return true;
             }
-            if (expression.value) {
+            if (expression.value && Array.isArray(expression.value)) {
                 // 如果找到变量了那么直接跳出循环
                 // 举个栗子，它可能是这样的 width: 10+1+1+1+1+1+@num+3+3+3
                 // 找到变量多余的+3+3就可以不管他了，所以是在值里面去寻找变量
                 return expression.value.some((val: any) =>
                     haveVariable(val, vars)
                 );
+            } else {
+                return haveVariable(expression, vars);
             }
         });
     }
