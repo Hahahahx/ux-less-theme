@@ -4,6 +4,8 @@
 在开始之前首先要确认一点，<b>动态主题切换始终只作用于开发环境下，不该在生产环境中使用它</b>，
 正确的做法应该是在开发环境中确认主题样式，生成所需要的样式文件，在生产环境中引用这些文件，而不是交给服务器再次生成，这是一步很耗时的操作。
 
+开发过程：https://zhuanlan.zhihu.com/p/260415434
+
 ```typescript
     const Theme = require("ux-less-theme");
     const express = require("express");
